@@ -3,7 +3,6 @@ let app=new Vue({
     data: {
         categories: [],
         topMovies: {},
-        imgs: [],
         selectedCategory : '',
         getID: null,
         titles: null,
@@ -51,7 +50,6 @@ let app=new Vue({
                         with_genres: this.getID,
                         sort_by: 'vote_count.desc',
                         language: 'fr-FR',
-                        poster: 'https://image.tmdb.org/t/p/w500',
                         include_adult: false,
                     }
                 }).then(response => {
