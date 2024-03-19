@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://kit.fontawesome.com/ac2abc700f.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js"></script>
+    <!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+    <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+    <!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
+    <script defer src="script.js"></script>
+    <title>RANK YOUR MOVIE</title>
+</head>
+
+<style>
+
+    img {
+        margin-top: 5px;
+        margin-left: 20px;
+        width: 10%;
+        height: 10%;
+    }
+
+    body{
+        background-color: black;
+    }
+
+    #backImg {
+    width: 150%;
+    height: 150%;
+    position: fixed;
+    z-index: -1;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: luminosity;
+    opacity: 0.6;
+    }
+
+
+    .finalTabResults .liColor:nth-child(2) {
+    background-color: #c0c0c0;
+    font-weight: bold;
+    color: white;
+    }
+
+    .finalTabResults .liColor:nth-child(3) {
+    background-color: #cd7f32; 
+    font-weight: bold;
+    color: white;
+    }
+
+    .finalTabResults .liColor:nth-child(1) {
+    font-weight: bold;
+    color: white;
+    }
+
+</style>
+
+<body>
+
+    <div id="app">
+
+        <img src="assets/img/wp1945939.webp" alt="Image de fond" id="backImg">
+
+        <nav class="bg-dark d-flex justify-content-between p-2">
+            <img src="assets/img/Fichier_2png.png" alt="Logo de l'application" id="logo">
+            <h1 class="text-center text-light fw-bold p-2 mt-1">RANK YOUR MOVIE</h1>
+            <button type="button"
+                class="btn btn-primary mt-3 mb-3 me-4 text-light bg-warning fw-bold border border-warning"
+                data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <i class="fa-solid fa-circle-question fs-4"></i>
+            </button>
+        </nav>
+
+        <div id="sectionMain">
+
+            <div class="row justify-content-around mt-4">
+
+                <div class="col-12 col-md-5">
+
+                    <select v-model="selectedCategory" @change="updateSelectedCategoryId()"
+                        class="form-select text-center fs-3 fw-bold text-uppercase text-warning">
+                        <option value="" @click="buttonsPressedHide()">Catégories</option>
+                        <option v-for="categorie in categories" @click="buttonsPressedShow()">{{categorie.name}}
+                        </option>
+                    </select>
+
+                </div>
+
+                <div class="finalTabTitle col-12 col-md-5 text-center">
+                    <h3 class="text-uppercase fw-bold text-warning">Tableau final</h3>
+                </div>
+
+            </div>
+
+            <div class="row justify-content-around">
+
+                <div class="col-12 col-md-5">
+
+                    <draggable item-key="id" v-model="myArray">
+                        <template #item="{element}">
+                            <li v-if="buttonsPressed" v-for="(title,index) in myArray" class="list-group-item fs-4">
+                                {{index+1}} : {{ title }}
+                            </li>
+                        </template>
+                    </draggable>
+
+                    <div class="buttons col text-center mt-4" v-if="buttonsPressed">
+                        <button type="button" class="btn btn-warning mt-4 text-light fw-bold" @click="showFinalVote()">Soumettre mon vote</button>
+                    </div>
+
+                </div>
+
+                <div class="col-12 finalTabResults col-md-5">
+                    <div v-if="showVote">
+                        <li class="list-group-item fs-4 bg-warning text-light fw-bold">1 : THE BIG LEBOWSKI <i
+                                class="fa-regular fa-face-smile-wink"></i></li>
+                        <li v-for="(title,index) in myArray" class="list-group-item liColor fs-4">{{index+2}} : {{ title }}</li>
+                    </div>
+
+                    <div class="buttons col text-center mt-4">
+                        <button type="button" class="btn btn-danger mt-4 fw-bold" @click="buttonsPressedShow()" v-if="showVote" id="modifyBtn">Modifier mon vote</button>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Fonctionnement de l'app</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Grâce à RANK YOUR MOVIE, classez vos films préférés selon différentes catégories.
+                    <br><br>
+                    Glissez et déposez chaque film parmi les 10 oeuvres les plus populaires de chaque genre.
+                    Confirmez votre choix et prenez part au monde du cinéma.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning fw-bold text-light" data-bs-dismiss="modal" aria-label="Close">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p>{{imgs}}</p>
+
+</body>
+
+</html>
